@@ -23,12 +23,12 @@ class Level {
     this.ts = tileSize;
 
     // Start position in grid coordinates (row/col).
-    // We compute this by scanning for tile value 2. 
+    // We compute this by scanning for tile value 2.
     this.start = this.findStart();
 
     // Optional: if you don't want the start tile to remain "special"
     // after you’ve used it to spawn the player, you can normalize it
-    // to floor so it draws like floor and behaves like floor. 
+    // to floor so it draws like floor and behaves like floor.
     if (this.start) {
       this.grid[this.start.r][this.start.c] = 0;
     }
@@ -74,7 +74,7 @@ class Level {
   // ----- Start-finding -----
 
   findStart() {
-    // Scan entire grid to locate the tile value 2 (start). 
+    // Scan entire grid to locate the tile value 2 (start).
     for (let r = 0; r < this.rows(); r++) {
       for (let c = 0; c < this.cols(); c++) {
         if (this.grid[r][c] === 2) {
@@ -91,35 +91,70 @@ class Level {
   // ----- Drawing -----
 
   draw() {
-    /*
-    Draw each tile as a rectangle.
-
-    Visual rules (matches your original logic): 
-    - Walls (1): dark teal
-    - Everything else: light floor
-    - Goal tile (3): add a highlighted inset rectangle
-    */
     for (let r = 0; r < this.rows(); r++) {
       for (let c = 0; c < this.cols(); c++) {
         const v = this.grid[r][c];
 
-        // Base tile fill
-        if (v === 1) fill(30, 50, 60);
-        else fill(232);
+        const x = c * this.ts;
+        const y = r * this.ts;
 
-        rect(c * this.ts, r * this.ts, this.ts, this.ts);
+        noStroke();
 
-        // Goal highlight overlay (only on tile 3). 
+        // ---- WALLS ----
+        if (v === 1) {
+          fill(194, 160, 122);
+          rect(x, y, this.ts, this.ts);
+          continue;
+        }
+
+        // ---- OBSTACLE (4) ----
+        if (v === 4) {
+          fill(103, 128, 28);
+          rect(x, y, this.ts, this.ts);
+          continue;
+        }
+
+        // ---- WATER TILE (floor / start / goal) ----
+        fill(30, 120, 180);
+        rect(x, y, this.ts, this.ts);
+
+        // Draw animated wave lines
+        stroke(200, 230, 255, 150);
+        noFill();
+
+        for (let i = 0; i < 3; i++) {
+          stroke(200, 230, 255, 150);
+          noFill();
+
+          let points = 10; // number of points along the line
+          beginShape();
+          for (let j = 0; j <= points; j++) {
+            const px = x + 4 + (j / points) * (this.ts - 8);
+            const py =
+              y +
+              this.ts / 2 +
+              sin(frameCount * 0.05 + r + c + i + j * 0.5) * 4 +
+              i * 4;
+            vertex(px, py);
+          }
+          endShape();
+        }
+
+        noStroke();
+
+        // ---- GOAL HIGHLIGHT ----
         if (v === 3) {
+          push();
+          fill(255, 200, 50); // bright yellow pellet
           noStroke();
-          fill(255, 200, 120, 200);
-          rect(
-            c * this.ts + 4,
-            r * this.ts + 4,
-            this.ts - 8,
-            this.ts - 8,
-            6
-          );
+
+          const x = c * this.ts + this.ts / 2;
+          const y = r * this.ts + this.ts / 2;
+          const rSize = this.ts * 0.3;
+
+          ellipse(x, y, rSize); // main circle
+          ellipse(x + rSize * 0.3, y - rSize * 0.1, rSize * 0.2); // highlight
+          pop();
         }
       }
     }

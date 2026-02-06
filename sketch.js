@@ -31,6 +31,15 @@ let li = 0;
 // Player instance (tile-based).
 let player;
 
+// ----- Feedback state -----
+let feedbackMessage = "";
+let feedbackAt = 0;
+let feedbackDuration = 1000; // ms
+let flashAt = -1;
+let flashDuration = 200; // ms
+
+let successScreen; // new
+
 function preload() {
   // Ensure level data is ready before setup runs.
   levelsData = loadJSON("levels.json");
@@ -52,28 +61,50 @@ function setup() {
   noStroke();
   textFont("sans-serif");
   textSize(14);
+
+  successScreen = new SuccessScreen(); // initialize
 }
 
 function draw() {
-  background(240);
+  if (successScreen.active) {
+    successScreen.draw(); // show end screen instead of level
+    return;
+  }
 
-  // Draw current level then player on top.
+  background(240);
   levels[li].draw();
   player.draw();
-
+  drawFlash();
   drawHUD();
 }
 
 function drawHUD() {
-  // HUD matches your original idea: show level count and controls.
   fill(0);
   text(`Level ${li + 1}/${levels.length} — WASD/Arrows to move`, 10, 16);
+
+  const elapsed = millis() - feedbackAt;
+
+  if (elapsed < feedbackDuration && feedbackMessage !== "") {
+    push();
+
+    // --- Rectangle background ---
+    const padding = 8;
+    textSize(14);
+    const w = textWidth(feedbackMessage) + padding * 2;
+    const h = 24; // height of popup
+    fill(180, 0, 0, 220); // semi-transparent red
+    noStroke();
+    rect(50, 30, w, h, 6); // 6px rounded corners
+
+    // --- Text on top ---
+    fill(255);
+    text(feedbackMessage, 50 + padding, 30 + h / 2 + 5); // slightly vertically centered
+
+    pop();
+  }
 }
 
 function keyPressed() {
-  /*
-  Convert key presses into a movement direction. (WASD + arrows)
-  */
   let dr = 0;
   let dc = 0;
 
@@ -83,11 +114,23 @@ function keyPressed() {
   else if (keyCode === DOWN_ARROW || key === "s" || key === "S") dr = 1;
   else return; // not a movement key
 
-  // Try to move. If blocked, nothing happens.
+  //  ACTUALLY MOVE THE PLAYER
   const moved = player.tryMove(levels[li], dr, dc);
 
-  // If the player moved onto a goal tile, advance levels.
-  if (moved && levels[li].isGoal(player.r, player.c)) {
+  if (!moved) return;
+
+  // Obstacle tile (4)
+  if (levels[li].tileAt(player.r, player.c) === 4) {
+    feedbackMessage = "Uh oh! Avoid the polluted water.";
+    feedbackAt = millis();
+    flashAt = millis();
+
+    loadLevel(li);
+    return;
+  }
+
+  // Goal tile
+  if (levels[li].isGoal(player.r, player.c)) {
     nextLevel();
   }
 }
@@ -96,24 +139,27 @@ function keyPressed() {
 
 function loadLevel(idx) {
   li = idx;
-
   const level = levels[li];
 
-  // Place player at the level's start tile (2), if present.
   if (level.start) {
     player.setCell(level.start.r, level.start.c);
   } else {
-    // Fallback spawn: top-left-ish (but inside bounds).
     player.setCell(1, 1);
   }
 
-  // Ensure the canvas matches this level’s dimensions.
+  player.movedAt = 0; // allow immediate movement after reset
   resizeCanvas(level.pixelWidth(), level.pixelHeight());
 }
 
 function nextLevel() {
-  // Wrap around when we reach the last level.
-  const next = (li + 1) % levels.length;
+  const next = li + 1;
+
+  if (next >= levels.length) {
+    // All levels completed → show success screen
+    successScreen.show();
+    return;
+  }
+
   loadLevel(next);
 }
 
@@ -130,4 +176,24 @@ function copyGrid(grid) {
   - And we don’t want to accidentally mutate the raw JSON data object. 
   */
   return grid.map((row) => row.slice());
+}
+function drawFlash() {
+  if (flashAt < 0) return; // no flash triggered yet
+
+  const elapsed = millis() - flashAt;
+
+  if (elapsed < flashDuration) {
+    push();
+    fill(255, 0, 0, 80);
+    rect(0, 0, width, height);
+    pop();
+  }
+}
+function mousePressed() {
+  // Only check if success screen is active
+  if (successScreen.active && successScreen.isMouseOverButton()) {
+    // Restart game: go back to level 0
+    successScreen.hide();
+    loadLevel(0);
+  }
 }
