@@ -1,36 +1,26 @@
 ## Project Title
 
-GBDA302 Week 4 Example 4: layable Maze (JSON + Level class + Player class)
+GBDA 302 Side Quest Week 4
 
 ---
 
 ## Authors
 
-Karen Cochrane and David Han
+Wen Ye, w5ye, 21089769
 
 ---
 
 ## Description
 
-Based on example 3, creates and positions the player using preloads and loadJSON files.
+Based on Week 4 Example 4 code, this project adds a new level using the levels.json file (level 3) and introduces an obstacle (e.g. polluted water) to the game. The game environment and player have also been stylized into an ocean/fish theme.
 
 ---
 
-## Learning Goals
+## Setup and Interaction Instructions
 
-Learning Goals:
+Player moves their fish character around using the WASD/arrow keys to reach the food pellet. Once reached, the player moves onto a new level/map, where there is an increased difficulty due to the amount of obstacles and area to move around.
 
-- Loads JSON levels (preload)
-- Builds Level objects
-- Creates/positions the Player
-- Handles input + level switching
-
-It is intentionally light on "details" because those are moved into:
-
-- Level.js (grid + drawing + tile meaning)
-- Player.js (position + movement rules)
-
----
+If the player reaches an obstacle, a red warning message will be shown temporarily, and the fish is brought back to the start of the level. After successfully completing all 3 levels, the player is brought to an end screen (success.js) and can restart by pressing the button.
 
 ## Assets
 
@@ -40,6 +30,6 @@ N/A
 
 ## GenAI
 
-The code was written by Dr. Karen Cochrane and David Han but they used GenAI to write the comments.
+GenAI was used to ideate and edit this code (originally written by Dr. Karen Cochrane and David Han) for the purposes of this side quest.
 
 ---

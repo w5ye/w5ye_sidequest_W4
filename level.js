@@ -8,6 +8,7 @@ Tile legend (from your original example):
 1 = wall
 2 = start
 3 = goal
+4 = obstacle
 
 Responsibilities:
 - Store the grid

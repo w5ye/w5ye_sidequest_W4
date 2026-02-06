@@ -31,11 +31,15 @@ class SuccessScreen {
     textAlign(CENTER, CENTER);
     textSize(24);
     fill(255, 220, 0);
-    text("Fishy is full! O<|", width / 2, height / 2 - 60);
+    text("You win! O<|", width / 2, height / 2 - 60);
 
-    textSize(18);
+    textSize(14);
     fill(255);
-    text("Click the button to play again", width / 2, height / 2 - 20);
+    text(
+      "Your fish is finally full. \n" + "Click the button to play again",
+      width / 2,
+      height / 2 - 20,
+    );
 
     // Draw restart button
     this.buttonX = width / 2 - this.buttonW / 2;
